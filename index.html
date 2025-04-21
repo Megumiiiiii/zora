@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zora Airdrop Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cek Alokasi Airdrop Zora</h1>
+  <input type="text" id="wallet" placeholder="Masukkan wallet address" />
+  <button onclick="cekAirdrop()">Cek</button>
+  <p id="hasil"></p>
+
+  <script>
+    async function cekAirdrop() {
+      const wallet = document.getElementById('wallet').value;
+      const hasilElem = document.getElementById('hasil');
+      hasilElem.textContent = "Mengambil data...";
+
+      const query = `
+        query {
+          zoraTokenAllocation(
+            identifierWalletAddresses: ["${wallet}"],
+            zoraClaimContractEnv: PRODUCTION
+          ) {
+            totalTokensEarned {
+              totalTokens
+            }
+          }
+        }
+      `;
+
+      try {
+        const response = await fetch("https://api.zora.co/universal/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query }),
+        });
+
+        const data = await response.json();
+        const tokens = data.data.zoraTokenAllocation.totalTokensEarned.totalTokens;
+        hasilElem.textContent = `Alokasi airdrop: ${tokens} ZORA`;
+      } catch (error) {
+        hasilElem.textContent = "Gagal mengambil data. Coba lagi.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
